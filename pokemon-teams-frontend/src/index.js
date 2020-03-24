@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 })
 
+
 function showAll(trainer, pokemons) {
 
     const main = document.querySelector("main")
@@ -21,49 +22,64 @@ function showAll(trainer, pokemons) {
 
     const p = document.createElement("p")
     p.innerText = trainer.name
-
+        // .disabled = false 
     const btn = document.createElement("button")
     btn.setAttribute("data-trainer-id", trainer.id)
     btn.innerText = "Add Pokemon"
+  
     btn.addEventListener("click", event => {
-        event.preventDefault()
+    
+        event.preventDefault();
+
         if (pokemons.length < 7) {
-            newPokemon(trainer);
-            // location.reload();
+            getPokemon(trainer).then(pokemon => {
+            
+            newPokemon(pokemons, pokemon, ul)
+            pokemons.push(pokemon)
+                })
+                // location.reload();
         } else {
             alert("Your Team is complete")
                 // location.reload();
         }
 
     })
-
     const ul = document.createElement("ul")
-
     pokemons.forEach(pokemon => {
-        const li = document.createElement("li")
-        li.innerText = `${pokemon.nickname}, (${pokemon.species})  `
+     newPokemon(pokemons, pokemon, ul)
+    
+    })
+
+        newDiv.append(p, btn, ul)
+            main.append(newDiv)  
+}
+
+
+
+
+function newPokemon(pokemons, pokemon, ul){
+    const li = document.createElement("li")
+        li.innerText = `${pokemon.nickname}, (${pokemon.species})`
 
         const buttonR = document.createElement("button")
         buttonR.setAttribute("class", "release")
         buttonR.setAttribute("data-pokemon-id", pokemon.id)
         buttonR.innerText = "release"
         buttonR.addEventListener("click", event => {
+            
             removePokemon(pokemon.id)
-            li.remove()
+                
+                li.remove()
             buttonR.remove()
+            pokemons = pokemons.filter(element => element.id != pokemon.id)
         })
-
+      
         li.append(buttonR)
         ul.append(li)
-        newDiv.append(p, btn, ul)
-        main.append(newDiv)
-
-    })
-
 }
 
 
-function newPokemon(trainer) {
+function getPokemon(trainer) {
     const confObj = {
         method: "POST",
         headers: {
@@ -71,20 +87,19 @@ function newPokemon(trainer) {
             "Accept": "application/json"
         },
         body: JSON.stringify({
-            nickname: "TestName",
-            species: "TestSpecies",
+            nickname: "",
+            species: "",
             trainer_id: trainer.id
         })
     }
 
-    fetch("http://localhost:3000/pokemons", confObj)
+    return fetch("http://localhost:3000/pokemons", confObj)
         .then(response => response.json())
-        .then(obj => console.log(obj))
         .catch(error => console.log(error))
 }
 
-
 function removePokemon(pId) {
+
     const confObj = {
         method: "DELETE",
         headers: {
@@ -93,8 +108,10 @@ function removePokemon(pId) {
         }
     }
 
-    fetch(`http://localhost:3000/pokemons/${pId}`, confObj)
+    return fetch(`http://localhost:3000/pokemons/${pId}`, confObj)
         .then(res => res.json())
-        .then(res => console.log(res))
+        .then(pokemon => console.log(pokemon))
+        
 
 }
+
